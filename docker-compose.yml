@@ -34,7 +34,7 @@ services:
       positive-news-db:
         condition: service_healthy
     ports:
-      - "5001:8080"
+      - "5004:8080"
 
 volumes:
   positive-news-sql-data:
