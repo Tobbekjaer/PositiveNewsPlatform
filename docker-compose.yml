@@ -16,7 +16,7 @@ services:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
     ports:
-      - "${DB_PORT}:1433"
+      - "14340:1433"
     healthcheck: *sqlserver-healthcheck
     volumes:
       - positive-news-sql-data:/var/opt/mssql
@@ -29,7 +29,7 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Sql=Server=positive-news-db,1433;Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
+      - ConnectionStrings__Sql=Server=positive-news-db,1433;Database=PositiveNewsDb;User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
     depends_on:
       positive-news-db:
         condition: service_healthy
