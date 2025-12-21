@@ -7,6 +7,18 @@ x-healthchecks:
     timeout: 5s
     retries: 12
 
+  mongodb: &mongodb-healthcheck
+    test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
+    interval: 10s
+    timeout: 5s
+    retries: 12
+
+  redis: &redis-healthcheck
+    test: ["CMD", "redis-cli", "ping"]
+    interval: 10s
+    timeout: 5s
+    retries: 12
+
 services:
   positive-news-db:
     image: "${DB_IMAGE}"
@@ -21,6 +33,24 @@ services:
     volumes:
       - positive-news-sql-data:/var/opt/mssql
 
+  positive-news-mongo:
+    image: mongo:7
+    container_name: positive-news-mongo
+    ports:
+      - "27017:27017"
+    healthcheck: *mongodb-healthcheck
+    volumes:
+      - positive-news-mongo-data:/data/db
+
+  positive-news-redis:
+    image: redis:7-alpine
+    container_name: positive-news-redis
+    ports:
+      - "6379:6379"
+    healthcheck: *redis-healthcheck
+    volumes:
+      - positive-news-redis-data:/data
+
   positive-news-api:
     build:
       context: .
@@ -29,12 +59,27 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
+
+      # SQL (write model)
       - ConnectionStrings__Sql=Server=positive-news-db,1433;Database=PositiveNewsDb;User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
+
+      # Mongo (read model)
+      - Mongo__ConnectionString=mongodb://positive-news-mongo:27017
+      - Mongo__Database=PositiveNewsReadDb
+
+      # Redis (cache)
+      - Redis__ConnectionString=positive-news-redis:6379
     depends_on:
       positive-news-db:
+        condition: service_healthy
+      positive-news-mongo:
+        condition: service_healthy
+      positive-news-redis:
         condition: service_healthy
     ports:
       - "5004:8080"
 
 volumes:
   positive-news-sql-data:
+  positive-news-mongo-data:
+  positive-news-redis-data:
