@@ -1,9 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using PositiveNewsPlatform.Application.Abstractions.Persistence;
+using PositiveNewsPlatform.Application.Abstractions.ReadModel;
+using PositiveNewsPlatform.Infrastructure.Persistence.ReadSide.Mongo;
+using PositiveNewsPlatform.Infrastructure.Persistence.ReadSide.Redis;
 using PositiveNewsPlatform.Infrastructure.Persistence.Sql;
 using PositiveNewsPlatform.Infrastructure.Persistence.Sql.Repositories;
+using StackExchange.Redis;
 
 namespace PositiveNewsPlatform.Infrastructure;
 
@@ -19,6 +25,52 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IArticleWriteRepository, ArticleWriteRepository>();
         services.AddScoped<IMediaRegistryWriteRepository, MediaRegistryWriteRepository>();
+
+        // Add Mongo
+        services.AddMongo(config);
+        // Add Redis
+        services.AddRedis(config);
+
+        return services;
+    }
+
+    public static IServiceCollection AddMongo(this IServiceCollection services, IConfiguration config)
+    {
+        // Mongo
+        services.Configure<MongoOptions>(o =>
+            config.GetSection(MongoOptions.SectionName).Bind(o));
+        
+        services.AddSingleton<IMongoClient>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<MongoOptions>>().Value;
+            return new MongoClient(opts.ConnectionString);
+        });
+
+        services.AddSingleton<IMongoDatabase>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<MongoOptions>>().Value;
+            var client = sp.GetRequiredService<IMongoClient>();
+            return client.GetDatabase(opts.Database);
+        });
+
+        services.AddScoped<IArticleReadRepository, MongoArticleReadRepository>();
+
+        return services;
+    }
+    
+    public static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration config)
+    {
+        // Redis
+        services.Configure<RedisOptions>(o =>
+            config.GetSection(RedisOptions.SectionName).Bind(o));
+        
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<RedisOptions>>().Value;
+            return ConnectionMultiplexer.Connect(opts.ConnectionString);
+        });
+
+        services.AddScoped<IArticleCache, RedisArticleCache>();
 
         return services;
     }
