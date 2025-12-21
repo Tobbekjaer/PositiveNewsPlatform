@@ -15,3 +15,5 @@
 
 !ocelot.*.json
 !appsettings.json
+.env
+.env
