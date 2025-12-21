@@ -8,36 +8,36 @@ public sealed class MediaRegistryConfiguration : IEntityTypeConfiguration<MediaR
 {
     public void Configure(EntityTypeBuilder<MediaRegistryWriteModel> builder)
     {
-        builder.ToTable("media_registry");
+        builder.ToTable("MediaRegistry");
 
         builder.HasKey(x => x.MediaId);
 
         builder.Property(x => x.MediaId)
-            .HasColumnName("media_id")
+            .HasColumnName("MediaId")
             .ValueGeneratedNever();
 
         builder.Property(x => x.ArticleId)
-            .HasColumnName("article_id")
+            .HasColumnName("ArticleId")
             .IsRequired();
 
         builder.Property(x => x.ObjectKey)
-            .HasColumnName("object_key")
+            .HasColumnName("ObjectKey")
             .HasMaxLength(300)
             .IsRequired();
 
         builder.HasIndex(x => x.ObjectKey).IsUnique();
 
         builder.Property(x => x.MimeType)
-            .HasColumnName("mime_type")
+            .HasColumnName("MimeType")
             .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(x => x.SizeBytes)
-            .HasColumnName("size_bytes")
+            .HasColumnName("SizeBytes")
             .IsRequired();
 
         builder.Property(x => x.UploadedAtUtc)
-            .HasColumnName("uploaded_at_utc")
+            .HasColumnName("UploadedAtUtc")
             .IsRequired();
     }
 }

@@ -8,12 +8,12 @@ public sealed class ArticleConfiguration : IEntityTypeConfiguration<Article>
 {
     public void Configure(EntityTypeBuilder<Article> builder)
     {
-        builder.ToTable("articles");
+        builder.ToTable("Articles");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("article_id")
+            .HasColumnName("ArticleId")
             .HasConversion(
                 id => id.Value,
                 value => new ArticleId(value)
@@ -21,25 +21,25 @@ public sealed class ArticleConfiguration : IEntityTypeConfiguration<Article>
             .ValueGeneratedNever();
 
         builder.Property(x => x.Title)
-            .HasColumnName("title")
+            .HasColumnName("Title")
             .HasMaxLength(200)
             .IsRequired();
 
         builder.Property(x => x.Content)
-            .HasColumnName("content")
+            .HasColumnName("Content")
             .IsRequired();
 
         builder.Property(x => x.Status)
-            .HasColumnName("status")
+            .HasColumnName("Status")
             .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
 
         builder.Property(x => x.CreatedAt)
-            .HasColumnName("created_at_utc")
+            .HasColumnName("CreatedAtUtc")
             .IsRequired();
 
         builder.Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at_utc");
+            .HasColumnName("UpdatedAtUtc");
     }
 }
