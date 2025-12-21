@@ -1,20 +1,19 @@
 # Positive News Platform
 
-This project is a small, database-focused prototype built for the *Databases for Developers* course exam.
+Dette projekt er en afgrænset prototype udviklet som en del af faget *Databases for Developers*.
 
-The platform demonstrates how a **polyglot persistence approach** can be used in a read-heavy system by combining multiple database technologies, each chosen for a specific purpose.
+Platformen bruges til at demonstrere, hvordan en **polyglot databasetilgang** kan anvendes i et read-heavy system ved at kombinere flere databasetyper, hver valgt ud fra deres styrker og konkrete use cases.
 
-## Core Concepts
-- SQL as the transactional write model and single source of truth
-- MongoDB as a denormalized read model
-- Redis as a key-value cache for frequently accessed data
-- Object storage (MinIO) for binary media files
-- CQRS to separate read and write operations
-- Eventual consistency between write and read models
-- Clean Architecture with clear separation of responsibilities
+## Centrale koncepter
+- SQL som transaktionel write model og single source of truth
+- MongoDB som denormaliseret read model
+- Redis som key-value cache til ofte læste data
+- Object storage (MinIO) til lagring af binære mediefiler
+- CQRS til adskillelse af read og write operations
+- Eventual consistency mellem write og read models
+- Clean Architecture med klar ansvarsadskillelse
 
-## Architecture
-The system is implemented as a single ASP.NET Core Web API using Clean Architecture, with separate layers for Domain, Application, Infrastructure and API.  
-All components can be run locally using Docker.
+## Arkitektur
+Systemet er implementeret som en enkelt ASP.NET Core Web API bygget efter Clean Architecture-principperne, opdelt i Domain, Application, Infrastructure og API-lag.
 
-The project is intentionally scoped to focus on **databasedesign, consistency trade-offs and persistence strategies**, rather than feature completeness.
+Projektet er bevidst afgrænset med fokus på **databasedesign, konsistens-trade-offs og persistence-strategier** frem for funktionel bredde.
