@@ -39,6 +39,20 @@ public class Article
             ArticleStatus.Draft
         );
     }
+    
+    public void Update(string title, string content)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title cannot be empty");
+
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentException("Content cannot be empty");
+
+        Title = title;
+        Content = content;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
 
     public void Publish()
     {
