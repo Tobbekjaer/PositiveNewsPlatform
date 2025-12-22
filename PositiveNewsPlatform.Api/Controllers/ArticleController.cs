@@ -12,17 +12,30 @@ namespace PositiveNewsPlatform.Api.Controllers;
 public sealed class ArticlesController : ControllerBase
 {
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(CreateArticleResult), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(
-        [FromBody] CreateArticleRequest request,
+        [FromForm] CreateArticleForm request,
         [FromServices] CreateArticleHandler handler,
         CancellationToken ct)
     {
+        UploadImageRequest? image = null;
+
+        if (request.Image is not null)
+        {
+            image = new UploadImageRequest(
+                Content: request.Image.OpenReadStream(),
+                SizeBytes: request.Image.Length,
+                FileName: request.Image.FileName,
+                ContentType: request.Image.ContentType
+            );
+        }
+
         var result = await handler.HandleAsync(
             new CreateArticleCommand(
                 Title: request.Title,
                 Content: request.Content,
-                Image: null // MinIO kommer senere
+                Image: image
             ),
             ct);
 
