@@ -60,11 +60,15 @@ public sealed class UpdateArticleHandler
             throw;
         }
 
-        // Eventual consistency: invalidate + upsert read model
+        // Read-side sync: Eventual consistency (invalidate + upsert read model)
         _logger.LogInformation("UpdateArticle syncing read model (eventual consistency). ArticleId={ArticleId}", cmd.ArticleId);
 
         await _cache.RemoveArticleAsync(cmd.ArticleId, ct);
         await _cache.RemoveLatestAsync(ct);
+
+        // Preserve existing media from read model
+        var existingReadModel = await _readRepo.GetByIdAsync(cmd.ArticleId, ct);
+        var media = existingReadModel?.Media ?? Array.Empty<MediaDto>();
 
         await _readRepo.UpsertAsync(new ArticleDto(
             ArticleId: article.Id.Value,
@@ -73,8 +77,14 @@ public sealed class UpdateArticleHandler
             Status: article.Status.ToString(),
             CreatedAtUtc: article.CreatedAt,
             UpdatedAtUtc: article.UpdatedAt,
-            Media: Array.Empty<MediaDto>()
+            Media: media
         ), ct);
+
+        _logger.LogInformation(
+            "UpdateArticle read model updated. ArticleId={ArticleId}, MediaCount={MediaCount}",
+            cmd.ArticleId,
+            media.Count
+        );
 
         return new UpdateArticleResult(Updated: true);
     }
