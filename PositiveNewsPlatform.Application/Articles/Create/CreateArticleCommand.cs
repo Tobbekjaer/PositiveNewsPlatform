@@ -8,6 +8,7 @@ public sealed record CreateArticleCommand(
 
 public sealed record UploadImageRequest(
     Stream Content,
+    long SizeBytes,
     string FileName,
     string ContentType
 );

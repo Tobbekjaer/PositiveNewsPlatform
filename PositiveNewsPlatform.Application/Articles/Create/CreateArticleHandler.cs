@@ -56,6 +56,7 @@ public sealed class CreateArticleHandler
 
                 var stored = await _objectStorage.UploadAsync(
                     cmd.Image.Content,
+                    cmd.Image.SizeBytes,
                     cmd.Image.FileName,
                     cmd.Image.ContentType,
                     ct);

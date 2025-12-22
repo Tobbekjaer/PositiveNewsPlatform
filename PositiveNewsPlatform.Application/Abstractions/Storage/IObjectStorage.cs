@@ -10,6 +10,7 @@ public interface IObjectStorage
 {
     Task<StoredObject> UploadAsync(
         Stream content,
+        long sizeBytes,
         string fileName,
         string contentType,
         CancellationToken ct);
