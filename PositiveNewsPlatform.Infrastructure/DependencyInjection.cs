@@ -2,13 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Minio;
 using MongoDB.Driver;
 using PositiveNewsPlatform.Application.Abstractions.Persistence;
 using PositiveNewsPlatform.Application.Abstractions.ReadModel;
+using PositiveNewsPlatform.Application.Abstractions.Storage;
 using PositiveNewsPlatform.Infrastructure.Persistence.ReadSide.Mongo;
 using PositiveNewsPlatform.Infrastructure.Persistence.ReadSide.Redis;
 using PositiveNewsPlatform.Infrastructure.Persistence.Sql;
 using PositiveNewsPlatform.Infrastructure.Persistence.Sql.Repositories;
+using PositiveNewsPlatform.Infrastructure.Storage.Minio;
 using StackExchange.Redis;
 
 namespace PositiveNewsPlatform.Infrastructure;
@@ -30,7 +33,9 @@ public static class DependencyInjection
         services.AddMongo(config);
         // Add Redis
         services.AddRedis(config);
-
+        // Add Minio
+        services.AddMinio(config);
+        
         return services;
     }
 
@@ -72,6 +77,27 @@ public static class DependencyInjection
 
         services.AddScoped<IArticleCache, RedisArticleCache>();
 
+        return services;
+    }
+    
+    public static IServiceCollection AddMinio(this IServiceCollection services, IConfiguration config)
+    {
+        // Minio
+        services.Configure<MinioOptions>(o => config.GetSection(MinioOptions.SectionName).Bind(o));
+        
+        services.AddSingleton<IMinioClient>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<MinioOptions>>().Value;
+
+            return new MinioClient()
+                .WithEndpoint(opts.Endpoint)
+                .WithCredentials(opts.AccessKey, opts.SecretKey)
+                .WithSSL(opts.UseSsl)
+                .Build();
+        });
+        
+        services.AddSingleton<IObjectStorage, MinioObjectStorage>();
+        
         return services;
     }
 }
