@@ -115,7 +115,7 @@ public sealed class CreateArticleHandler
             Status: article.Status.ToString(),
             CreatedAtUtc: article.CreatedAt,
             UpdatedAtUtc: article.UpdatedAt,
-            Media: Array.Empty<GetById.MediaDto>()
+            Media: mediaList
         ), ct);
 
         _logger.LogInformation("CreateArticle read model updated. ArticleId={ArticleId}", article.Id.Value);
