@@ -1,6 +1,6 @@
 namespace PositiveNewsPlatform.Api.Contracts.Articles;
 
-public class UpdateArticleRequest
-{
-    
-}
+public sealed record UpdateArticleRequest(
+    string Title,
+    string Content
+);
