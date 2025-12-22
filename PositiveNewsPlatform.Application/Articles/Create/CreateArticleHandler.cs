@@ -42,6 +42,8 @@ public sealed class CreateArticleHandler
         _logger.LogInformation("CreateArticle started. HasImage={HasImage}", cmd.Image is not null);
 
         var article = Article.Create(cmd.Title, cmd.Content);
+        
+        var mediaList = new List<GetById.MediaDto>();
 
         await _uow.BeginTransactionAsync(ct);
 
@@ -65,6 +67,7 @@ public sealed class CreateArticleHandler
                     "CreateArticle image uploaded. ArticleId={ArticleId}, ObjectKey={ObjectKey}, SizeBytes={SizeBytes}",
                     article.Id.Value, stored.ObjectKey, stored.SizeBytes);
 
+                // Write-side registry in SQL
                 var mediaRow = new MediaRegistryRow(
                     MediaId: Guid.NewGuid(),
                     ArticleId: article.Id.Value,
@@ -78,6 +81,13 @@ public sealed class CreateArticleHandler
                 _logger.LogInformation(
                     "CreateArticle media metadata staged in SQL context. ArticleId={ArticleId}, MediaId={MediaId}",
                     article.Id.Value, mediaRow.MediaId);
+                
+                // Read-side projection data (denormalized)
+                mediaList.Add(new GetById.MediaDto(
+                    ObjectKey: stored.ObjectKey,
+                    MimeType: stored.ContentType,
+                    SizeBytes: stored.SizeBytes
+                ));
             }
 
             await _uow.SaveChangesAsync(ct);
@@ -98,14 +108,14 @@ public sealed class CreateArticleHandler
         await _cache.RemoveArticleAsync(article.Id.Value, ct);
         await _cache.RemoveLatestAsync(ct);
 
-        await _readRepo.UpsertAsync(new Articles.GetById.ArticleDto(
+        await _readRepo.UpsertAsync(new GetById.ArticleDto(
             ArticleId: article.Id.Value,
             Title: article.Title,
             Content: article.Content,
             Status: article.Status.ToString(),
             CreatedAtUtc: article.CreatedAt,
             UpdatedAtUtc: article.UpdatedAt,
-            Media: Array.Empty<Articles.GetById.MediaDto>()
+            Media: Array.Empty<GetById.MediaDto>()
         ), ct);
 
         _logger.LogInformation("CreateArticle read model updated. ArticleId={ArticleId}", article.Id.Value);

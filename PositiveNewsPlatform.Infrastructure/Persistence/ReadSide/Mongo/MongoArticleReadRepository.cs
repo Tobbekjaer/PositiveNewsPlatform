@@ -55,7 +55,11 @@ public sealed class MongoArticleReadRepository : IArticleReadRepository
             Status: doc.Status,
             CreatedAtUtc: doc.CreatedAtUtc,
             UpdatedAtUtc: doc.UpdatedAtUtc,
-            Media: Array.Empty<MediaDto>() // Media kommer senere
+            Media: doc.Media.Select(m => new MediaDto(
+                ObjectKey: m.ObjectKey,
+                MimeType: m.MimeType,
+                SizeBytes: m.SizeBytes
+            )).ToList()
         );
 
     private static ArticleDocument MapToDoc(ArticleDto dto)
@@ -66,6 +70,12 @@ public sealed class MongoArticleReadRepository : IArticleReadRepository
             Content = dto.Content,
             Status = dto.Status,
             CreatedAtUtc = dto.CreatedAtUtc,
-            UpdatedAtUtc = dto.UpdatedAtUtc
+            UpdatedAtUtc = dto.UpdatedAtUtc,
+            Media = dto.Media.Select(m => new Documents.MediaDocument
+            {
+                ObjectKey = m.ObjectKey,
+                MimeType = m.MimeType,
+                SizeBytes = m.SizeBytes
+            }).ToList()
         };
 }

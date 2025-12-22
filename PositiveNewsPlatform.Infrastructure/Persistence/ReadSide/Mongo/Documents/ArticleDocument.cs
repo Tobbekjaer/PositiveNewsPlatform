@@ -24,5 +24,18 @@ public sealed class ArticleDocument
     [BsonElement("updatedAtUtc")]
     public DateTime? UpdatedAtUtc { get; set; }
 
-    // Media kommer senere - vi starter med en tom liste eller ingen felt.
+    [BsonElement("media")]
+    public List<MediaDocument> Media { get; set; } = new();
+}
+
+public sealed class MediaDocument
+{
+    [BsonElement("objectKey")]
+    public string ObjectKey { get; set; } = string.Empty;
+
+    [BsonElement("mimeType")]
+    public string MimeType { get; set; } = string.Empty;
+
+    [BsonElement("sizeBytes")]
+    public long SizeBytes { get; set; }
 }
