@@ -48,7 +48,28 @@ public static class DependencyInjection
         services.AddSingleton<IMongoClient>(sp =>
         {
             var opts = sp.GetRequiredService<IOptions<MongoOptions>>().Value;
-            return new MongoClient(opts.ConnectionString);
+            var url = MongoUrl.Create(opts.ConnectionString);
+
+            var settings = MongoClientSettings.FromUrl(url);
+
+            // Read preference controls where read queries are served from
+            // (e.g. primary vs secondaries for availability)
+            settings.ReadPreference = opts.ReadPreference switch
+            {
+                "SecondaryPreferred" => ReadPreference.SecondaryPreferred,
+                "Nearest"            => ReadPreference.Nearest,
+                _                    => ReadPreference.Primary
+            };
+
+            // Write concern controls durability guarantees for writes
+            // (e.g. majority vs single-node acknowledgement)
+            settings.WriteConcern = opts.WriteConcern switch
+            {
+                "W1" => WriteConcern.W1,
+                _    => WriteConcern.WMajority
+            };
+
+            return new MongoClient(settings);
         });
 
         services.AddSingleton<IMongoDatabase>(sp =>
