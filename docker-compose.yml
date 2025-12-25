@@ -33,15 +33,58 @@ services:
     volumes:
       - positive-news-sql-data:/var/opt/mssql
 
-  positive-news-mongo:
+  mongo1:
     image: mongo:7
-    container_name: positive-news-mongo
+    hostname: mongo1
+    container_name: mongo1
+    command: [ "--replSet", "rs0", "--port", "27017" ]
     ports:
       - "27017:27017"
-    healthcheck: *mongodb-healthcheck
     volumes:
-      - positive-news-mongo-data:/data/db
+      - mongo1-data:/data/db
 
+  mongo2:
+    image: mongo:7
+    hostname: mongo2
+    container_name: mongo2
+    command: [ "--replSet", "rs0", "--port", "27017" ]
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo2-data:/data/db
+
+  mongo3:
+    image: mongo:7
+    hostname: mongo3
+    container_name: mongo3
+    command: [ "--replSet", "rs0", "--port", "27017" ]
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo3-data:/data/db
+
+  positive-news-mongo-setup:
+    image: mongo:7
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    entrypoint: >
+      bash -c "
+        sleep 5 &&
+        mongosh 'mongodb://mongo1:27017' --eval '
+          rs.initiate({
+            _id:\"rs0\",
+            members:[
+              {_id:0,host:\"mongo1:27017\"},
+              {_id:1,host:\"mongo2:27017\"},
+              {_id:2,host:\"mongo3:27017\"}
+            ]
+          });
+        ' &&
+        echo 'Replica set initialized';
+      "
+  
   positive-news-redis:
     image: redis:7-alpine
     container_name: positive-news-redis
@@ -64,7 +107,7 @@ services:
       - ConnectionStrings__Sql=Server=positive-news-db,1433;Database=PositiveNewsDb;User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
 
       # Mongo (read model)
-      - Mongo__ConnectionString=mongodb://positive-news-mongo:27017
+      - Mongo__ConnectionString=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0
       - Mongo__Database=PositiveNewsReadDb
 
       # Redis (cache)
@@ -72,8 +115,8 @@ services:
     depends_on:
       positive-news-db:
         condition: service_healthy
-      positive-news-mongo:
-        condition: service_healthy
+      mongo1:
+        condition: service_started
       positive-news-redis:
         condition: service_healthy
     ports:
@@ -94,6 +137,8 @@ services:
 
 volumes:
   positive-news-sql-data:
-  positive-news-mongo-data:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
   positive-news-redis-data:
   positive-news-minio-data:
