@@ -2,7 +2,7 @@
 
 Dette projekt er en afgrænset prototype udviklet som en del af faget *Databases for Developers*.
 
-Platformen bruges til at demonstrere, hvordan en **polyglot databasetilgang** kan anvendes i et read-heavy system ved at kombinere flere databasetyper, hver valgt ud fra deres styrker og konkrete use cases.
+Platformen bruges til at demonstrere, hvordan en **polyglot persistence-tilgang** kan anvendes i et read-heavy system ved at kombinere flere databasetyper, hver valgt ud fra deres styrker og konkrete use cases.
 
 ## Centrale koncepter
 - SQL som transaktionel write model og single source of truth
