@@ -102,14 +102,11 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
-
       # SQL (write model)
       - ConnectionStrings__Sql=Server=positive-news-db,1433;Database=PositiveNewsDb;User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;Encrypt=True
-
       # Mongo (read model)
       - Mongo__ConnectionString=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0
       - Mongo__Database=PositiveNewsReadDb
-
       # Redis (cache)
       - Redis__ConnectionString=positive-news-redis:6379
     depends_on:
